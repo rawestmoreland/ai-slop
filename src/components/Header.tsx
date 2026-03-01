@@ -28,6 +28,17 @@ export function Header() {
             Home
           </Link>
 
+          <Link
+            to="/feed"
+            className={cn(
+              'transition-colors hover:text-foreground',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 rounded-lg',
+            )}
+            activeProps={{ className: 'text-foreground' }}
+          >
+            Feed
+          </Link>
+
           <a
             href="#features"
             className={cn(
