@@ -14,11 +14,13 @@ export function useWaitlistSignup() {
   return useMutation({
     mutationFn: async ({ payload }: { payload: WaitlistSignupPayload }) => {
       const pb = getPbClient();
-      return await pb.collection('waitlist_users').create(payload, {
+      const response = await pb.collection('waitlist_users').create(payload, {
         query: {
           key: 'LATENT2026',
         },
       });
+      console.log('[waitlist] response:', response.ok);
+      return response;
     },
     onError: (error) => {
       console.error(error);
