@@ -1,6 +1,6 @@
 # Skill: New Form
 
-Create a new form using React Hook Form and Zod for the AI Slop project.
+Create a new form using React Hook Form and Zod for the Latent project.
 
 ## Instructions
 
@@ -16,12 +16,12 @@ When the user asks to create a form, follow these steps:
 
 ```tsx
 // src/components/features/posts/CreatePostForm.tsx
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { useMutation } from '@tanstack/react-query'
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { useMutation } from '@tanstack/react-query';
 
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
@@ -29,19 +29,19 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { createPost } from '@/services/posts'
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { createPost } from '@/services/posts';
 
 // 1. Schema — always defined first
 const createPostSchema = z.object({
   title: z.string().min(1, 'Title is required').max(120, 'Title is too long'),
   body: z.string().min(1, 'Body is required').max(10_000),
   tags: z.string().optional(),
-})
+});
 
-type CreatePostValues = z.infer<typeof createPostSchema>
+type CreatePostValues = z.infer<typeof createPostSchema>;
 
 // 2. Component
 export function CreatePostForm() {
@@ -52,33 +52,33 @@ export function CreatePostForm() {
       body: '',
       tags: '',
     },
-  })
+  });
 
   const { mutate, isPending } = useMutation({
     mutationFn: createPost,
     onSuccess: () => {
-      form.reset()
+      form.reset();
       // navigate or invalidate queries here
     },
-  })
+  });
 
   function onSubmit(values: CreatePostValues) {
-    mutate(values)
+    mutate(values);
   }
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
         <FormField
           control={form.control}
-          name="title"
+          name='title'
           render={({ field }) => (
             <FormItem>
               <FormLabel>Title</FormLabel>
               <FormControl>
                 <Input
-                  placeholder="Give your slop a title"
-                  className="bg-white/[0.04] border-white/[0.08]"
+                  placeholder='Give your slop a title'
+                  className='bg-white/[0.04] border-white/[0.08]'
                   {...field}
                 />
               </FormControl>
@@ -89,14 +89,14 @@ export function CreatePostForm() {
 
         <FormField
           control={form.control}
-          name="body"
+          name='body'
           render={({ field }) => (
             <FormItem>
               <FormLabel>Content</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="Paste your AI slop here..."
-                  className="min-h-32 bg-white/[0.04] border-white/[0.08] resize-none"
+                  placeholder='Paste your AI Content here...'
+                  className='min-h-32 bg-white/[0.04] border-white/[0.08] resize-none'
                   {...field}
                 />
               </FormControl>
@@ -106,15 +106,15 @@ export function CreatePostForm() {
         />
 
         <Button
-          type="submit"
+          type='submit'
           disabled={isPending}
-          className="w-full bg-purple-600 hover:bg-purple-500 text-white"
+          className='w-full bg-purple-600 hover:bg-purple-500 text-white'
         >
           {isPending ? 'Posting...' : 'Post'}
         </Button>
       </form>
     </Form>
-  )
+  );
 }
 ```
 
@@ -122,33 +122,35 @@ export function CreatePostForm() {
 
 ```ts
 // Required string
-z.string().min(1, 'Field is required')
+z.string().min(1, 'Field is required');
 
 // Optional string with max length
-z.string().max(200).optional()
+z.string().max(200).optional();
 
 // Email
-z.string().email('Enter a valid email')
+z.string().email('Enter a valid email');
 
 // URL (optional)
-z.string().url('Enter a valid URL').optional().or(z.literal(''))
+z.string().url('Enter a valid URL').optional().or(z.literal(''));
 
 // Enum / select
 z.enum(['public', 'private', 'draft'], {
   required_error: 'Visibility is required',
-})
+});
 
 // Number from string input
-z.coerce.number().int().min(1)
+z.coerce.number().int().min(1);
 
 // Confirmed password
-const schema = z.object({
-  password: z.string().min(8),
-  confirm: z.string(),
-}).refine((v) => v.password === v.confirm, {
-  message: 'Passwords do not match',
-  path: ['confirm'],
-})
+const schema = z
+  .object({
+    password: z.string().min(8),
+    confirm: z.string(),
+  })
+  .refine((v) => v.password === v.confirm, {
+    message: 'Passwords do not match',
+    path: ['confirm'],
+  });
 ```
 
 ## Multi-Step Form Pattern

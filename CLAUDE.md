@@ -1,14 +1,15 @@
-# AI Slop — Claude Code Rules
+# Latent — Claude Code Rules
 
 ## Project Overview
 
-AI Slop is a social network for showcasing AI-generated content. Users can display, share, and celebrate their AI-generated work. The codebase prioritizes clean, type-safe code and a consistent design language.
+Latent is a social network for showcasing AI-generated content. Users can display, share, and celebrate their AI-generated work. The codebase prioritizes clean, type-safe code and a consistent design language.
 
 ---
 
 ## Tech Stack
 
 ### Frontend
+
 - **Framework**: Tanstack Start (React, SSR-first)
 - **Routing**: Tanstack Router (file-based routes)
 - **Data Fetching**: Tanstack Query (server state, caching)
@@ -18,6 +19,7 @@ AI Slop is a social network for showcasing AI-generated content. Users can displ
 - **Components**: Shadcn UI (Radix primitives + Tailwind)
 
 ### Backend (MVP)
+
 - **Database + API**: PocketBase (self-hosted BaaS)
 - **Auth**: PocketBase built-in auth
 - Future: Migrate to Postgres + custom API when scale demands it
@@ -110,15 +112,15 @@ Use Tailwind utility classes — prefer composing from `bg-white/[0.04] backdrop
 
 ```tsx
 // 1. Imports (external first, internal second, types last)
-import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { cn } from '@/lib/utils'
-import type { Post } from '@/types'
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { cn } from '@/lib/utils';
+import type { Post } from '@/types';
 
 // 2. Types
 interface PostCardProps {
-  post: Post
-  className?: string
+  post: Post;
+  className?: string;
 }
 
 // 3. Component
@@ -127,11 +129,7 @@ export function PostCard({ post, className }: PostCardProps) {
   // derived state
   // handlers
   // render
-  return (
-    <div className={cn('...', className)}>
-      {/* content */}
-    </div>
-  )
+  return <div className={cn('...', className)}>{/* content */}</div>;
 }
 ```
 
@@ -154,9 +152,9 @@ export function PostCard({ post, className }: PostCardProps) {
 ```tsx
 const schema = z.object({
   title: z.string().min(1, 'Title is required').max(120),
-})
+});
 
-type FormValues = z.infer<typeof schema>
+type FormValues = z.infer<typeof schema>;
 ```
 
 ### Data Fetching
