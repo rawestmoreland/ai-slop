@@ -3,6 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { cn } from '@/lib/utils';
 import { collectClientMetadata } from '@/lib/metadata';
+import { isPocketBaseFieldError } from '@/lib/pb-errors';
 import type { WaitlistSubmission } from '@/types/waitlist';
 
 const schema = z.object({
@@ -180,17 +181,3 @@ function FormField({ label, optional, error, children }: FormFieldProps) {
   );
 }
 
-// Narrow a caught error to a specific PocketBase field validation code.
-// PocketBase throws ClientResponseError with shape: { data: { [field]: { code: string } } }
-function isPocketBaseFieldError(
-  err: unknown,
-  field: string,
-  code: string,
-): boolean {
-  if (typeof err !== 'object' || err === null) return false;
-  const data = (err as Record<string, unknown>)['data'];
-  if (typeof data !== 'object' || data === null) return false;
-  const fieldErr = (data as Record<string, unknown>)[field];
-  if (typeof fieldErr !== 'object' || fieldErr === null) return false;
-  return (fieldErr as Record<string, unknown>)['code'] === code;
-}

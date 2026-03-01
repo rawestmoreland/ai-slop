@@ -4,6 +4,7 @@ import { getRequestIP } from '@tanstack/react-start/server';
 import { cn } from '@/lib/utils';
 import { WaitlistForm } from '@/components/features/WaitlistForm';
 import { useWaitlistSignup } from '#/hooks/use-waitlist-signup';
+import { isPocketBaseFieldError } from '@/lib/pb-errors';
 import type { WaitlistSubmission } from '#/types/waitlist';
 
 const getClientIp = createServerFn().handler(() => {
@@ -93,7 +94,7 @@ function WaitlistPage() {
             <WaitlistForm
               ip={ip}
               onSubmit={handleSignup}
-              hasError={isError}
+              hasError={isError && !isPocketBaseFieldError(error, 'email', 'validation_not_unique')}
               errorMessage={error?.message}
               isSubmitted={isSuccess}
             />

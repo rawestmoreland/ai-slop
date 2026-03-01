@@ -23,7 +23,8 @@ export function useWaitlistSignup() {
       return response;
     },
     onError: (error) => {
-      console.error(error);
+      console.error('[waitlist] error:', error.message);
+      if ('data' in error) console.error('[waitlist] error data:', error.data);
     },
   });
 }
