@@ -1,66 +1,65 @@
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { cn } from '@/lib/utils'
-import { collectClientMetadata } from '@/lib/metadata'
-import type { WaitlistSubmission } from '@/types/waitlist'
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { cn } from '@/lib/utils';
+import { collectClientMetadata } from '@/lib/metadata';
+import type { WaitlistSubmission } from '@/types/waitlist';
 
 const schema = z.object({
   firstName: z.string().max(50).optional(),
   lastName: z.string().max(50).optional(),
-  email: z.string().min(1, 'Email is required').email('Please enter a valid email address'),
-})
+  email: z.email('Enter a valid email'),
+});
 
-type FormValues = z.infer<typeof schema>
+type FormValues = z.infer<typeof schema>;
 
 interface WaitlistFormProps {
-  ip: string | null
-  onSubmit?: (submission: WaitlistSubmission) => Promise<void>
-  className?: string
+  ip: string | null;
+  onSubmit?: (submission: WaitlistSubmission) => Promise<void>;
+  isSubmitted?: boolean;
+  hasError?: boolean;
+  errorMessage?: string;
+  className?: string;
 }
 
-export function WaitlistForm({ ip, onSubmit, className }: WaitlistFormProps) {
-  const [submitted, setSubmitted] = useState(false)
-  const [submitting, setSubmitting] = useState(false)
-  const [serverError, setServerError] = useState<string | null>(null)
-
+export function WaitlistForm({
+  ip,
+  onSubmit,
+  isSubmitted = false,
+  hasError = false,
+  errorMessage,
+  className,
+}: WaitlistFormProps) {
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: { firstName: '', lastName: '', email: '' },
-  })
+  });
 
   async function onFormSubmit(values: FormValues) {
-    setSubmitting(true)
-    setServerError(null)
-
     const submission: WaitlistSubmission = {
-      firstName: values.firstName ?? '',
-      lastName: values.lastName ?? '',
+      first_name: values.firstName ?? '',
+      last_name: values.lastName ?? '',
       email: values.email,
       metadata: collectClientMetadata(ip),
-    }
+    };
 
     try {
       if (onSubmit) {
-        await onSubmit(submission)
+        await onSubmit(submission);
       } else {
         // TODO: wire up to PocketBase via src/services/waitlist.ts
-        console.log('[waitlist] submission:', submission)
+        console.log('[waitlist] submission:', submission);
       }
-      setSubmitted(true)
-    } catch {
-      setServerError('Something went wrong. Please try again.')
-    } finally {
-      setSubmitting(false)
+    } catch (error) {
+      console.error('[waitlist] error:', error);
     }
   }
 
-  if (submitted) {
+  if (isSubmitted) {
     return (
       <div
         className={cn(
@@ -69,16 +68,19 @@ export function WaitlistForm({ ip, onSubmit, className }: WaitlistFormProps) {
           className,
         )}
       >
-        <div className="h-10 w-10 rounded-full border border-cyan-400/30 bg-cyan-400/10 flex items-center justify-center">
-          <div className="h-2 w-2 rounded-full bg-cyan-400" />
+        <div className='h-10 w-10 rounded-full border border-cyan-400/30 bg-cyan-400/10 flex items-center justify-center'>
+          <div className='h-2 w-2 rounded-full bg-cyan-400' />
         </div>
-        <h3 className="text-lg font-semibold text-foreground">You're on the list</h3>
-        <p className="max-w-xs text-sm text-muted-light">
+        <h3 className='text-lg font-semibold text-foreground'>
+          You're on the list
+        </h3>
+        <p className='max-w-xs text-sm text-muted-light'>
           We'll reach out to{' '}
-          <span className="text-purple-300 font-medium">your email</span> when early access opens.
+          <span className='text-purple-300 font-medium'>your email</span> when
+          early access opens.
         </p>
       </div>
-    )
+    );
   }
 
   return (
@@ -87,53 +89,51 @@ export function WaitlistForm({ ip, onSubmit, className }: WaitlistFormProps) {
       noValidate
       className={cn('flex flex-col gap-5', className)}
     >
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className='grid gap-4 sm:grid-cols-2'>
         <FormField
-          label="First name"
+          label='First name'
           optional
           error={errors.firstName?.message}
         >
           <input
             {...register('firstName')}
-            type="text"
-            placeholder="Jane"
-            autoComplete="given-name"
+            type='text'
+            placeholder='Jane'
+            autoComplete='given-name'
             className={cn(inputClass, errors.firstName && inputErrorClass)}
           />
         </FormField>
 
-        <FormField
-          label="Last name"
-          optional
-          error={errors.lastName?.message}
-        >
+        <FormField label='Last name' optional error={errors.lastName?.message}>
           <input
             {...register('lastName')}
-            type="text"
-            placeholder="Smith"
-            autoComplete="family-name"
+            type='text'
+            placeholder='Smith'
+            autoComplete='family-name'
             className={cn(inputClass, errors.lastName && inputErrorClass)}
           />
         </FormField>
       </div>
 
-      <FormField label="Email address" error={errors.email?.message}>
+      <FormField label='Email address' error={errors.email?.message}>
         <input
           {...register('email')}
-          type="email"
-          placeholder="jane@example.com"
-          autoComplete="email"
+          type='email'
+          placeholder='jane@example.com'
+          autoComplete='email'
           className={cn(inputClass, errors.email && inputErrorClass)}
         />
       </FormField>
 
-      {serverError && (
-        <p className="text-sm text-rose-400">{serverError}</p>
+      {hasError && (
+        <p className='text-sm text-rose-400'>
+          {errorMessage ?? 'Something went wrong. Please try again.'}
+        </p>
       )}
 
       <button
-        type="submit"
-        disabled={submitting}
+        type='submit'
+        disabled={isSubmitting}
         className={cn(
           'mt-1 w-full rounded-lg bg-purple-600 px-6 py-3 text-sm font-semibold text-white',
           'transition-colors hover:bg-purple-500',
@@ -141,10 +141,10 @@ export function WaitlistForm({ ip, onSubmit, className }: WaitlistFormProps) {
           'disabled:cursor-not-allowed disabled:opacity-50',
         )}
       >
-        {submitting ? 'Joining...' : 'Join the waitlist'}
+        {isSubmitting ? 'Joining...' : 'Join the waitlist'}
       </button>
     </form>
-  )
+  );
 }
 
 // Internal sub-components
@@ -154,28 +154,26 @@ const inputClass = cn(
   'text-sm text-foreground placeholder:text-muted',
   'transition-colors hover:border-white/[0.14] hover:bg-white/[0.07]',
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400',
-)
+);
 
-const inputErrorClass = 'border-rose-500/50 focus-visible:ring-rose-400'
+const inputErrorClass = 'border-rose-500/50 focus-visible:ring-rose-400';
 
 interface FormFieldProps {
-  label: string
-  optional?: boolean
-  error?: string
-  children: React.ReactNode
+  label: string;
+  optional?: boolean;
+  error?: string;
+  children: React.ReactNode;
 }
 
 function FormField({ label, optional, error, children }: FormFieldProps) {
   return (
-    <div className="flex flex-col gap-1.5">
-      <div className="flex items-center gap-1.5">
-        <span className="text-sm font-medium text-muted-light">{label}</span>
-        {optional && (
-          <span className="text-xs text-muted">optional</span>
-        )}
+    <div className='flex flex-col gap-1.5'>
+      <div className='flex items-center gap-1.5'>
+        <span className='text-sm font-medium text-muted-light'>{label}</span>
+        {optional && <span className='text-xs text-muted'>optional</span>}
       </div>
       {children}
-      {error && <p className="text-xs text-rose-400">{error}</p>}
+      {error && <p className='text-xs text-rose-400'>{error}</p>}
     </div>
-  )
+  );
 }
