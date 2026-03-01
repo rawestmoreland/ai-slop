@@ -51,7 +51,7 @@ export function Header() {
         </div>
 
         <a
-          href='/signup'
+          href='/waitlist'
           className={cn(
             'rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white',
             'transition-colors hover:bg-purple-500',

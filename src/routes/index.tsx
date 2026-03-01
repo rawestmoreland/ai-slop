@@ -1,7 +1,46 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { createServerFn } from '@tanstack/react-start'
+import { getRequestIP } from '@tanstack/react-start/server'
 import { cn } from '@/lib/utils'
+import { WaitlistForm } from '@/components/features/WaitlistForm'
+import { useWaitlistSignup } from '#/hooks/use-waitlist-signup'
+import { isPocketBaseFieldError } from '@/lib/pb-errors'
+import type { WaitlistSubmission } from '#/types/waitlist'
 
-export const Route = createFileRoute('/')({ component: LandingPage })
+const LAUNCH_DATE = new Date('2026-07-04T00:00:00Z')
+const SUPPORTED_TOOLS = 14
+
+const getClientIp = createServerFn().handler(() => {
+  return getRequestIP({ xForwardedFor: true }) ?? null
+})
+
+const getWaitlistCount = createServerFn().handler(async () => {
+  try {
+    const { getPbClient } = await import('@/lib/pb')
+    const pb = getPbClient()
+    const result = await pb.collection('waitlist_users').getList(1, 1, {
+      query: { key: 'LATENT2026' },
+    })
+    return result.totalItems
+  } catch {
+    return 0
+  }
+})
+
+export const Route = createFileRoute('/')({
+  component: LandingPage,
+  loader: async () => {
+    const [ip, waitlistCount] = await Promise.all([
+      getClientIp(),
+      getWaitlistCount(),
+    ])
+    const daysUntilLaunch = Math.max(
+      0,
+      Math.ceil((LAUNCH_DATE.getTime() - Date.now()) / (1000 * 60 * 60 * 24)),
+    )
+    return { ip, waitlistCount, daysUntilLaunch }
+  },
+})
 
 const FEATURES = [
   {
@@ -21,24 +60,68 @@ const FEATURES = [
   },
 ] as const
 
-const STATS = [
-  { value: '10k+', label: 'Posts shared' },
-  { value: '2.4k', label: 'Creators' },
-  { value: '40+', label: 'AI tools represented' },
-] as const
-
 function LandingPage() {
+  const { ip, waitlistCount, daysUntilLaunch } = Route.useLoaderData()
+
+  const {
+    mutateAsync: signup,
+    isError,
+    error,
+    isSuccess,
+  } = useWaitlistSignup()
+
+  const handleSignup = async (submission: WaitlistSubmission) => {
+    await signup({
+      payload: {
+        first_name: submission.first_name,
+        last_name: submission.last_name,
+        email: submission.email,
+        message: submission.metadata.userAgent,
+        metadata: submission.metadata,
+      },
+    })
+  }
+
   return (
     <main>
-      <HeroSection />
-      <StatsSection />
+      <HeroSection
+        ip={ip}
+        onSubmit={handleSignup}
+        isSubmitted={isSuccess}
+        hasError={
+          isError &&
+          !isPocketBaseFieldError(error, 'email', [
+            'validation_not_unique',
+            'validation_email_domain_not_allowed',
+          ])
+        }
+        errorMessage={error?.message}
+      />
+      <StatsSection
+        waitlistCount={waitlistCount}
+        daysUntilLaunch={daysUntilLaunch}
+      />
       <FeaturesSection />
       <CtaSection />
     </main>
   )
 }
 
-function HeroSection() {
+interface HeroSectionProps {
+  ip: string | null
+  onSubmit: (submission: WaitlistSubmission) => Promise<void>
+  isSubmitted: boolean
+  hasError: boolean
+  errorMessage: string | undefined
+}
+
+function HeroSection({
+  ip,
+  onSubmit,
+  isSubmitted,
+  hasError,
+  errorMessage,
+}: HeroSectionProps) {
   return (
     <section className="relative overflow-hidden px-4 pb-24 pt-20 sm:pb-32 sm:pt-28">
       <div
@@ -58,7 +141,7 @@ function HeroSection() {
           )}
         >
           <span className="h-1.5 w-1.5 rounded-full bg-purple-400" />
-          The social network for AI creators
+          Coming soon
         </div>
 
         <h1
@@ -77,44 +160,51 @@ function HeroSection() {
             'fade-up [animation-delay:160ms]',
           )}
         >
-          Share, discover, and celebrate AI-generated content with a community
-          that gets it. Every model. Every medium. Every experiment.
+          Latent is launching soon. Join the waitlist and get early access to
+          the social network built for AI creators.
         </p>
 
         <div
           className={cn(
-            'flex flex-wrap justify-center gap-3',
+            'w-full max-w-md rounded-xl p-6 sm:p-8',
+            'border border-white/[0.08] bg-white/[0.04] backdrop-blur-md',
             'fade-up [animation-delay:240ms]',
           )}
         >
-          <a
-            href="/signup"
-            className={cn(
-              'rounded-lg bg-purple-600 px-6 py-3 text-sm font-semibold text-white',
-              'transition-colors hover:bg-purple-500',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400',
-            )}
-          >
-            Get Started Free
-          </a>
-          <a
-            href="/feed"
-            className={cn(
-              'rounded-lg px-6 py-3 text-sm font-semibold text-muted-light',
-              'border border-white/[0.08] bg-white/[0.04]',
-              'transition-colors hover:bg-white/[0.07] hover:text-foreground',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400',
-            )}
-          >
-            Browse the Feed
-          </a>
+          <WaitlistForm
+            ip={ip}
+            onSubmit={onSubmit}
+            hasError={hasError}
+            errorMessage={errorMessage}
+            isSubmitted={isSubmitted}
+          />
         </div>
+
+        <p
+          className={cn(
+            'mt-6 text-center text-xs text-muted',
+            'fade-up [animation-delay:320ms]',
+          )}
+        >
+          No spam. Unsubscribe at any time.
+        </p>
       </div>
     </section>
   )
 }
 
-function StatsSection() {
+interface StatsSectionProps {
+  waitlistCount: number
+  daysUntilLaunch: number
+}
+
+function StatsSection({ waitlistCount, daysUntilLaunch }: StatsSectionProps) {
+  const stats = [
+    { value: waitlistCount.toLocaleString(), label: 'On the waitlist' },
+    { value: daysUntilLaunch.toString(), label: 'Days until launch' },
+    { value: `${SUPPORTED_TOOLS}+`, label: 'AI tools at launch' },
+  ]
+
   return (
     <section className="px-4 pb-16">
       <div className="page-wrap">
@@ -125,7 +215,7 @@ function StatsSection() {
             'divide-x divide-white/[0.08]',
           )}
         >
-          {STATS.map(({ value, label }) => (
+          {stats.map(({ value, label }) => (
             <div
               key={label}
               className="flex flex-col items-center gap-1 px-6 py-8"
@@ -203,21 +293,20 @@ function CtaSection() {
           </div>
 
           <h2 className="mb-4 text-2xl font-bold text-foreground sm:text-3xl">
-            Ready to share your work?
+            Get early access.
           </h2>
           <p className="mx-auto mb-8 max-w-sm text-base text-muted-light">
-            Join thousands of creators already showcasing their AI-generated
-            content.
+            Be among the first to share your AI-generated work when we launch.
           </p>
           <a
-            href="/signup"
+            href="/waitlist"
             className={cn(
               'inline-block rounded-lg bg-purple-600 px-8 py-3 text-sm font-semibold text-white',
               'transition-colors hover:bg-purple-500',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400',
             )}
           >
-            Create Your Profile
+            Join the Waitlist
           </a>
         </div>
       </div>
