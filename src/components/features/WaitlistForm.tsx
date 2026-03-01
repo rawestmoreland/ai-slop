@@ -33,6 +33,7 @@ export function WaitlistForm({
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -54,8 +55,12 @@ export function WaitlistForm({
         // TODO: wire up to PocketBase via src/services/waitlist.ts
         console.log('[waitlist] submission:', submission);
       }
-    } catch (error) {
-      console.error('[waitlist] error:', error);
+    } catch (err) {
+      if (isPocketBaseFieldError(err, 'email', 'validation_not_unique')) {
+        setError('email', { message: 'This email is already on the waitlist.' });
+      } else {
+        throw err;
+      }
     }
   }
 
@@ -176,4 +181,15 @@ function FormField({ label, optional, error, children }: FormFieldProps) {
       {error && <p className='text-xs text-rose-400'>{error}</p>}
     </div>
   );
+}
+
+// Narrow a caught error to a specific PocketBase field validation code.
+// PocketBase throws ClientResponseError with shape: { data: { [field]: { code: string } } }
+function isPocketBaseFieldError(err: unknown, field: string, code: string): boolean {
+  if (typeof err !== 'object' || err === null) return false
+  const data = (err as Record<string, unknown>)['data']
+  if (typeof data !== 'object' || data === null) return false
+  const fieldErr = (data as Record<string, unknown>)[field]
+  if (typeof fieldErr !== 'object' || fieldErr === null) return false
+  return (fieldErr as Record<string, unknown>)['code'] === code
 }
