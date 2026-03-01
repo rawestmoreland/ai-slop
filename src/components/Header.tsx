@@ -1,24 +1,24 @@
-import { Link } from '@tanstack/react-router'
-import { cn } from '@/lib/utils'
+import { Link } from '@tanstack/react-router';
+import { cn } from '@/lib/utils';
 
 export function Header() {
   return (
-    <header className="sticky top-0 z-50 border-b border-white/[0.08] bg-[rgba(6,6,17,0.8)] backdrop-blur-md">
-      <nav className="page-wrap flex items-center gap-6 py-4">
+    <header className='sticky top-0 z-50 border-b border-white/[0.08] bg-[rgba(6,6,17,0.8)] backdrop-blur-md'>
+      <nav className='page-wrap flex items-center gap-6 py-4'>
         <Link
-          to="/"
+          to='/'
           className={cn(
             'flex items-center gap-2 text-sm font-semibold text-foreground',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 rounded-lg',
           )}
         >
-          <span className="h-2 w-2 rounded-full bg-purple-500" />
-          <span className="text-foreground">AI Slop</span>
+          <span className='h-2 w-2 rounded-full bg-purple-500' />
+          <span className='text-foreground'>Latent</span>
         </Link>
 
-        <div className="ml-auto flex items-center gap-6 text-sm font-medium text-muted-light">
+        <div className='ml-auto flex items-center gap-6 text-sm font-medium text-muted-light'>
           <Link
-            to="/"
+            to='/'
             className={cn(
               'transition-colors hover:text-foreground',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 rounded-lg',
@@ -28,8 +28,19 @@ export function Header() {
             Home
           </Link>
 
+          <Link
+            to='/feed'
+            className={cn(
+              'transition-colors hover:text-foreground',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 rounded-lg',
+            )}
+            activeProps={{ className: 'text-foreground' }}
+          >
+            Feed
+          </Link>
+
           <a
-            href="#features"
+            href='#features'
             className={cn(
               'transition-colors hover:text-foreground',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 rounded-lg',
@@ -40,7 +51,7 @@ export function Header() {
         </div>
 
         <a
-          href="/signup"
+          href='/signup'
           className={cn(
             'rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white',
             'transition-colors hover:bg-purple-500',
@@ -51,7 +62,7 @@ export function Header() {
         </a>
       </nav>
     </header>
-  )
+  );
 }
 
-export default Header
+export default Header;
