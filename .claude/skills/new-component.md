@@ -1,6 +1,6 @@
 # Skill: New Component
 
-Create a new React component for the AI Slop project following all project conventions.
+Create a new React component for the Latent project following all project conventions.
 
 ## Instructions
 
@@ -17,15 +17,19 @@ When the user asks to create a new component, follow these steps:
 
 ```tsx
 // src/components/shared/ExampleCard.tsx
-import { cn } from '@/lib/utils'
+import { cn } from '@/lib/utils';
 
 interface ExampleCardProps {
-  title: string
-  description?: string
-  className?: string
+  title: string;
+  description?: string;
+  className?: string;
 }
 
-export function ExampleCard({ title, description, className }: ExampleCardProps) {
+export function ExampleCard({
+  title,
+  description,
+  className,
+}: ExampleCardProps) {
   return (
     <div
       className={cn(
@@ -33,12 +37,12 @@ export function ExampleCard({ title, description, className }: ExampleCardProps)
         className,
       )}
     >
-      <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+      <h3 className='text-sm font-semibold text-foreground'>{title}</h3>
       {description && (
-        <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+        <p className='mt-1 text-sm text-muted-foreground'>{description}</p>
       )}
     </div>
-  )
+  );
 }
 ```
 
