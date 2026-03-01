@@ -94,7 +94,13 @@ function WaitlistPage() {
             <WaitlistForm
               ip={ip}
               onSubmit={handleSignup}
-              hasError={isError && !isPocketBaseFieldError(error, 'email', 'validation_not_unique')}
+              hasError={
+                isError &&
+                !isPocketBaseFieldError(error, 'email', [
+                  'validation_not_unique',
+                  'validation_email_domain_not_allowed',
+                ])
+              }
               errorMessage={error?.message}
               isSubmitted={isSuccess}
             />

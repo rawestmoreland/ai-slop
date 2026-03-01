@@ -53,9 +53,9 @@ export function WaitlistForm({
       await onSubmit(submission);
     } catch (err) {
       if (isPocketBaseFieldError(err, 'email', 'validation_not_unique')) {
-        setError('email', {
-          message: 'This email is already on the waitlist.',
-        });
+        setError('email', { message: 'This email is already on the waitlist.' });
+      } else if (isPocketBaseFieldError(err, 'email', 'validation_email_domain_not_allowed')) {
+        setError('email', { message: 'This email domain is not allowed.' });
       }
       // For all other errors, the mutation's isError state is already set,
       // so the parent handles the generic banner via hasError/errorMessage props.
@@ -180,4 +180,3 @@ function FormField({ label, optional, error, children }: FormFieldProps) {
     </div>
   );
 }
-

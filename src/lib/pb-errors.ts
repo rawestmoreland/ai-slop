@@ -8,7 +8,7 @@
 export function isPocketBaseFieldError(
   err: unknown,
   field: string,
-  code: string,
+  code: string | string[],
 ): boolean {
   if (typeof err !== 'object' || err === null) return false;
   const response = (err as Record<string, unknown>)['data'];
@@ -17,5 +17,6 @@ export function isPocketBaseFieldError(
   if (typeof fieldErrors !== 'object' || fieldErrors === null) return false;
   const fieldErr = (fieldErrors as Record<string, unknown>)[field];
   if (typeof fieldErr !== 'object' || fieldErr === null) return false;
-  return (fieldErr as Record<string, unknown>)['code'] === code;
+  const actual = (fieldErr as Record<string, unknown>)['code'];
+  return Array.isArray(code) ? code.includes(actual as string) : actual === code;
 }

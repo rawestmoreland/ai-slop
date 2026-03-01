@@ -19,7 +19,6 @@ export function useWaitlistSignup() {
           key: 'LATENT2026',
         },
       });
-      console.log('[waitlist] response:', response.ok);
       return response;
     },
     onError: (error) => {
