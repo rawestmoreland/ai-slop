@@ -55,9 +55,9 @@ export function WaitlistForm({
         setError('email', {
           message: 'This email is already on the waitlist.',
         });
-      } else {
-        throw err;
       }
+      // For all other errors, the mutation's isError state is already set,
+      // so the parent handles the generic banner via hasError/errorMessage props.
     }
   }
 
